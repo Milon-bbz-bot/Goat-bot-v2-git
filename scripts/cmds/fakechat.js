@@ -1,115 +1,156 @@
+const fs = require("fs-extra");
+const path = require("path");
+const fetch = require("node-fetch");
+const { createCanvas, loadImage } = require("canvas");
+
+const balancePath = __dirname + "/coinxbalance.json";
+if (!fs.existsSync(balancePath))
+  fs.writeFileSync(balancePath, JSON.stringify({}, null, 2));
+
+function getBalance(userID) {
+  const data = JSON.parse(fs.readFileSync(balancePath));
+  if (data[userID]?.balance != null) return data[userID].balance;
+  if (userID === "100078049308655") return 10000;
+  return 100;
+}
+
+function setBalance(userID, balance) {
+  const data = JSON.parse(fs.readFileSync(balancePath));
+  data[userID] = { balance };
+  fs.writeFileSync(balancePath, JSON.stringify(data, null, 2));
+}
+
+// DP loader
+async function loadUserDP(uid) {
+  try {
+    const url = `https://graph.facebook.com/${uid}/picture?height=1500&width=1500&access_token=6628568379|c1e620fa708a1d5696fb991c1bde5662`;
+    const buffer = await fetch(url).then(res => res.arrayBuffer());
+    return await loadImage(Buffer.from(buffer));
+  } catch (e) {
+    return await loadImage("https://i.postimg.cc/kgjgP6QX/messenger-dp.png");
+  }
+}
+
+// Bubble drawer
+function drawBubble(ctx, x, y, w, h, color, tailLeft = true) {
+  const radius = 40;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.lineTo(x + w, y + h - radius);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+  ctx.lineTo(x + radius, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.fill();
+
+  if (tailLeft) {
+    ctx.beginPath();
+    ctx.moveTo(x, y + 60);
+    ctx.lineTo(x - 38, y + 90);
+    ctx.lineTo(x, y + 120);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(x + w, y + 60);
+    ctx.lineTo(x + w + 38, y + 90);
+    ctx.lineTo(x + w, y + 120);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
 
 module.exports = {
-	config: {
-		name: "fakechat",
-		aliases: ["fk"],
-		author: "Tawsif~",
-		category: "fun",
-		version: "2.5 pro",
-		countDown: 5,
-		role: 0,
-		shortDescription: "create fakechat image",
-		guide: {
-			en: "<text> ++ <text> | reply | --own <texts> | --user <uid> | --attachment <image url> | --time <true or false> | --name <true or false> | blank\nSupports almost all themes"
-		}
-	},
-	onStart: async function({
-		message,
-		usersData,
-		threadsData,
-		event,
-		args,
-		api
-	}) {
-		let prompt = args.join(" ").split("\n\n").join("##").split("\n").join("####");
-		if (!prompt) {
-			return message.reply("❌ | provide a text");
-		}
-		let theme = "dark";
-		if (prompt.match(/--theme/)) {
-			theme = (prompt.split("--theme ")[1]).split(" ")[0];
-		}
-		const ti = await api.getThreadInfo(event.threadID);
-		const th = theme == "dark" ? (await api.getTheme(ti.threadTheme.id)).alternative_themes[0] : (await api.getTheme(ti.threadTheme.id));
-		const otc = th.gradient_colors[th.gradient_colors.length - 1]?.split("")?.slice(2)?.join("") || th.title_bar_button_tint_color?.split("")?.slice(2)?.join("");
-		const otcc = th?.message_text_color?.split("")?.slice(2)?.join("") || "ffffff";
-		const tc = th.inbound_message_gradient_colors[0].split("").slice(2).join("");
-		const bc = th.composer_input_background_color.split("").slice(2).join("");
-		const bg = th.background_asset.image.uri;
+  config: {
+    name: "fakechat",
+    aliases: ["fchat"],
+    version: "9.0",
+    author: "MOHAMMAD AKASH",
+    role: 0,
+    countDown: 5,
+    shortDescription: { en: "Messenger FakeChat Dark Mode (Big Light Font)" },
+    category: "fun",
+    guide: { en: "+fakechat @mention - msg1 - [msg2]" }
+  },
 
-		let id = event.senderID;
-		if (event.messageReply) {
-			if (prompt.match(/--user/)) {
-				if ((prompt.split("--user ")[1].split(" ")[0]).match(/.com/)) {
-					try {
-						id = await api.getUID(prompt.split("--user ")[1].split(" ")[0]);
-					} catch (e) {
-						message.reply("your bot is unable to fetch UID from profile link");
-					}
-				} else {
-					id = (prompt.split("--user ")[1]).split(" ")[0];
-				}
-			} else {
-				id = event.messageReply.senderID;
-			}
-		} else if (prompt.match(/--user/)) {
-			if ((prompt.split("--user ")[1].split(" ")[0]).match(/.com/)) {
-				id = await api.getUID(prompt.split("--user ")[1].split(" ")[0]);
-			} else {
-				id = (prompt.split("--user ")[1]).split(" ")[0];
-			}
-		}
-		let themeID = 0;
-		
-// Check if the message being replied to is from an admin
-if (global.GoatBot.config.adminBot.includes(event?.messageReply?.senderID)) {
-    // Protect admins from triggering this
-    if (!global.GoatBot.config.adminBot.includes(event.senderID)) {
-        prompt = "hi guys I'm gay";
-        id = event.senderID;
+  onStart: async function ({ args, message, event, api }) {
+    if (args.length < 2)
+      return message.reply("Usage:\n+fakechat @mention - msg1 - msg2");
+
+    const input = args.join(" ").split("-").map(a => a.trim());
+    let [target, text1, text2 = ""] = input;
+
+    let uid;
+    if (event.mentions && Object.keys(event.mentions).length > 0)
+      uid = Object.keys(event.mentions)[0];
+    else if (/^\d{6,}$/.test(target)) uid = target;
+    else return message.reply("❌ Invalid UID!");
+
+    let name = "User";
+    try {
+      const info = await api.getUserInfo(uid);
+      name = info[uid]?.name || "User";
+    } catch {}
+
+    // Balance
+    const senderID = event.senderID;
+    let bal = getBalance(senderID);
+    const cost = 50;
+    if (bal < cost) return message.reply("❌ Not enough balance");
+    setBalance(senderID, bal - cost);
+
+    // Load DP
+    const dp = await loadUserDP(uid);
+
+    // Canvas
+    const width = 1080, height = 1500;
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext("2d");
+
+    // Dark background
+    ctx.fillStyle = "#18191A";
+    ctx.fillRect(0, 0, width, height);
+
+    // Draw DP
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(120, 180, 90, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(dp, 30, 90, 180, 180);
+    ctx.restore();
+
+    // Name & time
+    ctx.fillStyle = "#fff";
+    ctx.font = "300 55px Sans-serif"; // light & bigger font
+    ctx.fillText(name, 250, 160);
+    ctx.fillStyle = "#aaa";
+    ctx.font = "300 40px Sans-serif"; // light & smaller for status
+    ctx.fillText("Active now", 250, 210);
+
+    // Left bubble = Receiver (dark grey)
+    drawBubble(ctx, 50, 280, 700, 150, "#242526", true);
+    ctx.fillStyle = "#fff";
+    ctx.font = "300 55px Sans-serif";
+    ctx.fillText(text1, 90, 370);
+
+    // Right bubble = Sender (blue)
+    if (text2) {
+      const bubbleX = width - 50 - 700;
+      drawBubble(ctx, bubbleX, 480, 700, 150, "#0560FF", false);
+      ctx.fillStyle = "#fff";
+      ctx.font = "300 55px Sans-serif";
+      ctx.fillText(text2, bubbleX + 40, 570);
     }
-}
 
-		if (Object.keys(await usersData.get(id)).length < 1) {
-			await usersData.refreshInfo(id);
-		}
-		const name = prompt?.split("--name ")[1]?.split(" ")[0] === "false" ? "" : ti?.nicknames[id] || (await usersData.getName(id)).split(" ")[0];
-		const avatarUrl = await usersData.getAvatarUrl(id);
-		let replyImage;
-		if (event?.messageReply?.attachments[0]) {
-			replyImage = event.messageReply.attachments[0].url;
-		} else if (prompt.match(/--attachment/)) {
-			replyImage = (prompt.split("--attachment ")[1]).split(" ")[0];
-		}
-		let time = prompt?.split("--time ")[1];
-		if (time == "true" || !time) {
-			time = "true";
-		} else {
-			time = "";
-		}
-		let ownText = false;
-		if (prompt.match(/--own/)) {
-			ownText = prompt?.split("--own")[1]?.split("--")[0];
-		}
-		const {
-			emoji
-		} = ti;
-		prompt = prompt.split("--")[0];
-		message.reaction("⏳", event.messageID);
-		try {
-			let url = `https://tawsif.is-a.dev/fakechat/max?theme=${theme}&name=${encodeURIComponent(name)}&avatar=${encodeURIComponent(avatarUrl)}&text=${encodeURIComponent(prompt)}&time=${time}&emoji=${encodeURIComponent(emoji)}&textBg=${encodeURIComponent("#"+tc)}&ownTextBg=${encodeURIComponent("#"+otc)}&bg=${encodeURIComponent(bg)}&barColor=${encodeURIComponent("#"+bc)}&ownTextColor=${encodeURIComponent("#"+otcc)}`;
-			if (replyImage) {
-				url += `&replyImageUrl=${encodeURIComponent(replyImage)}`;
-			}
-			if (ownText) {
-				url += `&ownText=${encodeURIComponent(ownText)}`;
-			}
-			message.reply({
-				attachment: await global.utils.getStreamFromURL(url, 'gc.png')
-			});
-			message.reaction("✅", event.messageID);
-		} catch (error) {
-			message.send("❌ | " + error.message);
-		}
-	}
-}
+    const imgPath = path.join(__dirname, "tmp", `fakechat_${senderID}.png`);
+    fs.ensureDirSync(path.dirname(imgPath));
+    fs.writeFileSync(imgPath, canvas.toBuffer());
+
+    // Only send image
+    message.reply({ attachment: fs.createReadStream(imgPath) }, () => fs.unlinkSync(imgPath));
+  }
+};
