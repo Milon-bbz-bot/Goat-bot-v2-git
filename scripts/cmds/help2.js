@@ -57,7 +57,7 @@ module.exports = {
     name: "help",
     aliases: ["menu"],
     version: "2.0",
-    author: "Saimx69x | fixed by Aphelion",
+    author: "Saimx69x | fixed milon",
     role: 0,
     category: "info",
     shortDescription: "Show all commands",
