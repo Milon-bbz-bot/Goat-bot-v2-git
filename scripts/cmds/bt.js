@@ -2,7 +2,7 @@ const axios = require("axios");
 
 module.exports = {
   config: {
-    name: "bot",
+    name: "bt",
     version: "2.3.5",
     role: 0,
     credits: "Mahabub/fixed Milon",
