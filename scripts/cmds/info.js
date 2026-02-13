@@ -21,9 +21,9 @@ module.exports = {
 
   onStart: async function ({ message }) {
 
-    const ownerName = "STARBOY APHELION";
+    const ownerName = "STARBOY Milon";
     const ownerAge = "N/A";
-    const ownerFB = "https://facebook.com/star.boy.aphelion";
+    const ownerFB = "https://www.facebook.com/share/17uGq8qVZ9/";
     const ownerNumber = "+88019XXXXXXX";
     const status = "Active";
 
@@ -34,7 +34,7 @@ module.exports = {
     const totalCommands = global.GoatBot?.commands?.size || 0;
 
     const images = [
-      "https://files.catbox.moe/j2fecp.jpg"
+      "https://files.catbox.moe/i1fa0t.jpg"
     ];
     const image = images[Math.floor(Math.random() * images.length)];
 
