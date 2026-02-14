@@ -3,27 +3,27 @@ const fs = require("fs-extra");
 const path = require("path");
 
 module.exports = {
-config: {
-name: "owner",
-version: "2.0.0",
-hasPermssion: 0,
-credits: "Milon Hasan",
-description: "ছবির সাথে ওনার এবং বটের তথ্য - Fixed Version",
-commandCategory: "info",
-cooldowns: 5
-},
+  config: {
+    name: "owner",
+    version: "2.0.1",
+    author: "Milon Hasan",
+    countDown: 5,
+    role: 0,
+    description: "Owner & Bot Info",
+    category: "info",
+    guide: "{pn}"
+  },
 
-onStart: async function ({ api, event }) {
-// সরাসরি ইমেজের লিঙ্ক
-const imageUrl = "https://i.imgur.com/dJD7ren.jpeg"; 
+  onStart: async function ({ api, event }) {
 
-// সময় ও আপটাইম ক্যালকুলেশন
-const uptime = process.uptime();
-const days = Math.floor(uptime / (24 * 60 * 60));
-const hours = Math.floor((uptime % (24 * 60 * 60)) / (60 * 60));
-const mins = Math.floor((uptime % (60 * 60)) / 60);
+    const imageUrl = "https://i.imgur.com/dJD7ren.jpeg";
 
-const infoMessage = `💠 𝗠𝗜𝗟𝗢𝗡 𝗕𝗢𝗧 𝗦𝗬𝗦𝗧𝗘𝗠 💠
+    const uptime = process.uptime();
+    const days = Math.floor(uptime / (24 * 60 * 60));
+    const hours = Math.floor((uptime % (24 * 60 * 60)) / (60 * 60));
+    const mins = Math.floor((uptime % (60 * 60)) / 60);
+
+    const infoMessage = `💠 𝗠𝗜𝗟𝗢𝗡 𝗕𝗢𝗧 𝗦𝗬𝗦𝗧𝗘𝗠 💠
 ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 » 🤖 𝗕𝗼𝘁: 𝗠𝗜𝗟𝗢𝗡 𝗕𝗢𝗧
 » ☄️ 𝗣𝗿𝗲𝗳𝗶𝘅: 『 . 』
@@ -37,32 +37,36 @@ const infoMessage = `💠 𝗠𝗜𝗟𝗢𝗡 𝗕𝗢𝗧 𝗦𝗬𝗦𝗧𝗘
 » 🔗 𝗦𝗼𝗰𝗶𝗮𝗹: facebook.com/share/17uGq8qVZ9/
 ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬`;
 
-// ইমেজের জন্য ডিরেক্টরি পাথ
-const cachePath = path.join(__dirname, "cache", "owner_info.jpg");
+    try {
 
-try {
-// ১. আগে চেক করবে cache ফোল্ডার আছে কিনা, না থাকলে বানাবে
-if (!fs.existsSync(path.join(__dirname, "cache"))) {
-fs.mkdirSync(path.join(__dirname, "cache"));
-}
+      const cacheDir = path.join(__dirname, "cache");
+      const cachePath = path.join(cacheDir, "owner_info.jpg");
 
-// ২. ইমেজটি ডাউনলোড করে সেভ করবে
-const response = await axios.get(imageUrl, { responseType: "arraybuffer" });
-fs.writeFileSync(cachePath, Buffer.from(response.data, "utf-8"));
+      // ✅ recursive folder create
+      fs.ensureDirSync(cacheDir);
 
-// ৩. ইমেজসহ মেসেজ পাঠাবে
-return api.sendMessage({
-body: infoMessage,
-attachment: fs.createReadStream(cachePath)
-}, event.threadID, () => {
-// ৪. পাঠানোর পর ইমেজটি ডিলিট করে দিবে যাতে জায়গা নষ্ট না হয়
-if (fs.existsSync(cachePath)) fs.unlinkSync(cachePath);
-}, event.messageID);
+      // ✅ image download
+      const response = await axios.get(imageUrl, {
+        responseType: "arraybuffer"
+      });
 
-} catch (error) {
-console.error("Owner info error:", error);
-// যদি ইমেজ ডাউনলোডে সমস্যা হয়, শুধু টেক্সট মেসেজ যাবে
-return api.sendMessage(infoMessage, event.threadID, event.messageID);
-}
-}
+      fs.writeFileSync(cachePath, response.data);
+
+      return api.sendMessage(
+        {
+          body: infoMessage,
+          attachment: fs.createReadStream(cachePath)
+        },
+        event.threadID,
+        () => {
+          if (fs.existsSync(cachePath)) fs.unlinkSync(cachePath);
+        },
+        event.messageID
+      );
+
+    } catch (error) {
+      console.error("Owner info error:", error);
+      return api.sendMessage(infoMessage, event.threadID, event.messageID);
+    }
+  }
 };
