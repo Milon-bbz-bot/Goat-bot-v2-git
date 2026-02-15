@@ -2,64 +2,80 @@ const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 
-const mahmud = async () => {
-  const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json");
-  return base.data.mahmud;
-};
-
 module.exports = {
-  config: {
-    name: "pin",
-    aliases: ["pinterest"],
-    version: "1.7",
-    author: "MahMUD",
-    countDown: 10,
-    role: 0,
-    category: "image gen",
-    guide: { en: "{pn} query - amount\nExample: {pn} goku ultra - 10" }
-  },
+    config: {
+        name: "pin",
+        aliases: ["pinterest"],
+        version: "1.1",
+        author: "Dipto",
+        countDown: 15,
+        role: 0,
+        shortDescription: "Pinterest Image Search",
+        longDescription: "Pinterest Image Search",
+        category: "download",
+        guide: {
+            en: "{pn} query-count",
+        },
+    },
 
-  onStart: async function ({ api, event, args, message }) {
-    const obfuscatedAuthor = String.fromCharCode(77, 97, 104, 77, 85, 68);
-    if (module.exports.config.author !== obfuscatedAuthor) {
-      return api.sendMessage(
-        "You are not authorized to change the author name.\n",
-        event.threadID,
-        event.messageID
-      );
-    }
+    onStart: async function ({ api, event, args }) {
+        const queryAndCount = args.join(" ").split("-");
+        const q = queryAndCount[0]?.trim();
+        const count = queryAndCount[1]?.trim();
 
-    try {
-      const queryAndLength = args.join(" ").split("-");
-      const keySearch = queryAndLength[0]?.trim();
-      const count = queryAndLength[1]?.trim();
-      const numberSearch = count ? Math.min(parseInt(count), 20) : 6;
+        if (!q || !count || isNaN(count)) {
+            return api.sendMessage(
+                "❌| Wrong format. Use: query-count (e.g., itachi-5)",
+                event.threadID,
+                event.messageID
+            );
+        }
 
-      if (!keySearch) return message.reply("❌ | Please enter a search query.\nExample: goku ultra - 10");
+        try {
+            const w = await api.sendMessage("Please wait...", event.threadID);
 
-      const apiUrl = await mahmud();
-      const response = await axios.get(
-        `${apiUrl}/api/pin?query=${encodeURIComponent(keySearch)}&limit=${numberSearch}`
-      );
+            // Fetch data from the new API
+            const response = await axios.get(
+                `https://mahabub-pinterest-api.vercel.app/api/pin?search=${encodeURIComponent(q)}&count=${encodeURIComponent(count)}`
+            );
 
-      const data = response.data.images;
-      if (!data || data.length === 0) return message.reply("❌ | No images found for your query.");
+            const data = response.data.data;
 
-      const attachments = [];
-      for (let i = 0; i < data.length; i++) {
-        const imgUrl = data[i];
-        const imgRes = await axios.get(imgUrl, { responseType: "arraybuffer" });
-        const imgPath = path.join(__dirname, `temp_pin_${Date.now()}_${i}.jpg`);
-        await fs.outputFile(imgPath, imgRes.data);
-        attachments.push(fs.createReadStream(imgPath));
-      }
+            if (!data || data.length === 0) {
+                return api.sendMessage(
+                    "❌ No images found for your query.",
+                    event.threadID,
+                    event.messageID
+                );
+            }
 
-      await message.reply({ body: `✅ | Here are your ${attachments.length} images for "${keySearch}"`, attachment: attachments });
-      attachments.forEach(att => fs.unlink(att.path, () => {}));
+            const attachments = [];
+            const totalImagesCount = Math.min(data.length, parseInt(count));
 
-    } catch (err) {
-      console.error(err);
-      return message.reply(`🥹error, contact MahMUD`);
-    }
-  }
+            for (let i = 0; i < totalImagesCount; i++) {
+                const imgUrl = data[i];
+                const imgResponse = await axios.get(imgUrl, { responseType: "arraybuffer" });
+                const imgPath = path.join(__dirname, "dvassests", `${i + 1}.jpg`);
+                await fs.outputFile(imgPath, imgResponse.data);
+                attachments.push(fs.createReadStream(imgPath));
+            }
+
+            await api.unsendMessage(w.messageID);
+            await api.sendMessage(
+                {
+                    body: `✅ | Here's your Pinterest images for "${q}"\n🐤 | Total Images Count: ${totalImagesCount}`,
+                    attachment: attachments,
+                },
+                event.threadID,
+                event.messageID
+            );
+        } catch (error) {
+            console.error(error);
+            await api.sendMessage(
+                `❌ Error: ${error.message}`,
+                event.threadID,
+                event.messageID
+            );
+        }
+    },
 };
