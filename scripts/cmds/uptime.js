@@ -65,7 +65,7 @@ const upTimeStr = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 const canvas = createCanvas(1000, 500);
 const ctx = canvas.getContext("2d");
 
-const bgUrl = "https://i.imgur.com/b4rDlP9.png";
+const bgUrl = "https://i.imgur.com/UyAH9td.jpeg";
 const background = await loadImage(bgUrl);
 ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
