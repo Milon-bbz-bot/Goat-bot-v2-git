@@ -1,14 +1,22 @@
 const { getStreamsFromAttachment, log } = global.utils;
 const mediaTypes = ["photo", 'png', "animated_image", "video", "audio"];
 
+// <--- এখানে আপনার নির্দিষ্ট থ্রেড ID সেট করা হয়েছে --->
+const TARGET_THREAD_ID = "25012294875129251"; 
+
 module.exports = {
 	config: {
 		name: "call",
-		version: "1.7",
+		aliases: ["callad","called"],
+		version: "1.6",
 		author: "NTKhang",
 		countDown: 5,
 		role: 0,
-		description: {
+		shortDescription: {
+			vi: "gửi tin nhắn về admin bot",
+			en: "send message to admin bot"
+		},
+		longDescription: {
 			vi: "gửi báo cáo, góp ý, báo lỗi,... của bạn về admin bot",
 			en: "send report, feedback, bug,... to admin bot"
 		},
@@ -28,20 +36,20 @@ module.exports = {
 			success: "Đã gửi tin nhắn của bạn về %1 admin thành công!\n%2",
 			failed: "Đã có lỗi xảy ra khi gửi tin nhắn của bạn về %1 admin\n%2\nKiểm tra console để biết thêm chi tiết",
 			reply: "📍 Phản hồi từ admin %1:\n─────────────────\n%2\n─────────────────\nPhản hồi tin nhắn này để tiếp tục gửi tin nhắn về admin",
-			replySuccess: "Đã gửi phản hồi của bạn về admin thành công!",
+			replySuccess: "Đã gửi phản hồi আপনারไปยัง গন্তব্য থ্রেড ID-তে সফলভাবে পাঠানো হয়েছে!",
 			feedback: "📝 Phản hồi từ người dùng %1:\n- User ID: %2%3\n\nNội dung:\n─────────────────\n%4\n─────────────────\nPhản hồi tin nhắn này để gửi tin nhắn về người dùng",
 			replyUserSuccess: "Đã gửi phản hồi của bạn về người dùng thành công!",
 			noAdmin: "Hiện tại bot chưa có admin nào"
 		},
 		en: {
 			missingMessage: "Please enter the message you want to send to admin",
-			sendByGroup: "\n- Sent from group: %1\n- Thread ID: %2",
+			sendByGroup: "\n- Sent from Admin",
 			sendByUser: "\n- Sent from user",
 			content: "\n\nContent:\n─────────────────\n%1\n─────────────────\nReply this message to send message to user",
 			success: "Sent your message to %1 admin successfully!\n%2",
 			failed: "An error occurred while sending your message to %1 admin\n%2\nCheck console for more details",
 			reply: "📍 Reply from admin %1:\n─────────────────\n%2\n─────────────────\nReply this message to continue send message to admin",
-			replySuccess: "Sent your reply to admin successfully!",
+			replySuccess: "Sent your reply successfully",
 			feedback: "📝 Feedback from user %1:\n- User ID: %2%3\n\nContent:\n─────────────────\n%4\n─────────────────\nReply this message to send message to user",
 			replyUserSuccess: "Sent your reply to user successfully!",
 			noAdmin: "Bot has no admin at the moment"
@@ -53,10 +61,11 @@ module.exports = {
 		if (!args[0])
 			return message.reply(getLang("missingMessage"));
 		const { senderID, threadID, isGroup } = event;
-		if (config.adminBot.length == 0)
-			return message.reply(getLang("noAdmin"));
+		
+		// AdminBot চেক লজিক সরানো হলো, যেহেতু এখন এটি নির্দিষ্ট থ্রেডে যাবে।
+		
 		const senderName = await usersData.getName(senderID);
-		const msg = "==📨️ CALL ADMIN 📨️=="
+		const msg = "==📨️ USER MESSAGE 📨️=="
 			+ `\n- User Name: ${senderName}`
 			+ `\n- User ID: ${senderID}`
 			+ (isGroup ? getLang("sendByGroup", (await threadsData.get(threadID)).threadName, threadID) : getLang("sendByUser"));
@@ -73,60 +82,40 @@ module.exports = {
 			)
 		};
 
-		const successIDs = [];
-		const failedIDs = [];
-		const adminNames = await Promise.all(config.adminBot.map(async item => ({
-			id: item,
-			name: await usersData.getName(item)
-		})));
+		// <--- মূল পরিবর্তন: লুপের পরিবর্তে সরাসরি টার্গেট থ্রেড ID-তে মেসেজ পাঠানো --->
+		try {
+			const messageSend = await api.sendMessage(formMessage, TARGET_THREAD_ID);
+			
+			// রিপ্লাই হ্যান্ডেল করার জন্য সেট করা হলো 
+			global.GoatBot.onReply.set(messageSend.messageID, {
+				commandName,
+				messageID: messageSend.messageID,
+				threadID: threadID, // ইউজারের আসল থ্রেড ID সংরক্ষণ করা হচ্ছে
+				messageIDSender: event.messageID,
+				type: "userCallAdmin" // নামকরণ পরিবর্তন করা হয়নি
+			});
+			
+			// সাফল্য বার্তা
+			return message.reply(`✅Your message has been sent to admin`);
 
-		for (const uid of config.adminBot) {
-			try {
-				const messageSend = await api.sendMessage(formMessage, uid);
-				successIDs.push(uid);
-				global.GoatBot.onReply.set(messageSend.messageID, {
-					commandName,
-					messageID: messageSend.messageID,
-					threadID,
-					messageIDSender: event.messageID,
-					type: "userCallAdmin"
-				});
-			}
-			catch (err) {
-				failedIDs.push({
-					adminID: uid,
-					error: err
-				});
-			}
+		} catch (err) {
+			console.error("CALL AD (TARGET THREAD) ERROR:", err);
+			return message.reply(`❌ মেসেজটি টার্গেট থ্রেড ID: ${TARGET_THREAD_ID} এ পাঠাতে ব্যর্থ। ত্রুটি দেখুন।`);
 		}
-
-		let msg2 = "";
-		if (successIDs.length > 0)
-			msg2 += getLang("success", successIDs.length,
-				adminNames.filter(item => successIDs.includes(item.id)).map(item => ` <@${item.id}> (${item.name})`).join("\n")
-			);
-		if (failedIDs.length > 0) {
-			msg2 += getLang("failed", failedIDs.length,
-				failedIDs.map(item => ` <@${item.adminID}> (${adminNames.find(item2 => item2.id == item.adminID)?.name || item.adminID})`).join("\n")
-			);
-			log.err("CALL ADMIN", failedIDs);
-		}
-		return message.reply({
-			body: msg2,
-			mentions: adminNames.map(item => ({
-				id: item.id,
-				tag: item.name
-			}))
-		});
 	},
 
 	onReply: async ({ args, event, api, message, Reply, usersData, commandName, getLang }) => {
+		// onReply ফাংশনটি এখন ধরে নিচ্ছে যে TARGET_THREAD_ID থেকে রিপ্লাই আসছে 
+		// (অর্থাৎ, TARGET_THREAD_ID এর ইউজাররা এখন অ্যাডমিনের ভূমিকা পালন করছে)
+		
 		const { type, threadID, messageIDSender } = Reply;
 		const senderName = await usersData.getName(event.senderID);
 		const { isGroup } = event;
 
 		switch (type) {
 			case "userCallAdmin": {
+				// এই কেসটি এখন TARGET_THREAD_ID থেকে ইউজারকে রিপ্লাই পাঠানোর জন্য ব্যবহৃত হবে
+				
 				const formMessage = {
 					body: getLang("reply", senderName, args.join(" ")),
 					mentions: [{
@@ -138,21 +127,26 @@ module.exports = {
 					)
 				};
 
+				// রিপ্লাইটি ইউজারের আসল থ্রেড ID-তে পাঠানো হচ্ছে (Reply.threadID)
 				api.sendMessage(formMessage, threadID, (err, info) => {
 					if (err)
 						return message.err(err);
 					message.reply(getLang("replyUserSuccess"));
+					
+					// রিপ্লাই ট্র্যাকিং আবার সেট করা হলো যাতে ইউজার আবার রিপ্লাই দিতে পারে
 					global.GoatBot.onReply.set(info.messageID, {
 						commandName,
 						messageID: info.messageID,
 						messageIDSender: event.messageID,
-						threadID: event.threadID,
-						type: "adminReply"
+						threadID: event.threadID, // এখন এটি TARGET_THREAD_ID
+						type: "adminReply" 
 					});
 				}, messageIDSender);
 				break;
 			}
 			case "adminReply": {
+				// এই কেসটি যদি ইউজার রিপ্লাই করে তবে মেসেজটি আবার TARGET_THREAD_ID-তে পাঠানোর জন্য
+				
 				let sendByGroup = "";
 				if (isGroup) {
 					const { threadName } = await api.getThreadInfo(event.threadID);
@@ -169,10 +163,13 @@ module.exports = {
 					)
 				};
 
-				api.sendMessage(formMessage, threadID, (err, info) => {
+				// মেসেজটি TARGET_THREAD_ID-তে পাঠানো হচ্ছে 
+				api.sendMessage(formMessage, TARGET_THREAD_ID, (err, info) => { 
 					if (err)
 						return message.err(err);
 					message.reply(getLang("replySuccess"));
+					
+					// রিপ্লাই ট্র্যাকিং আবার সেট করা হলো 
 					global.GoatBot.onReply.set(info.messageID, {
 						commandName,
 						messageID: info.messageID,
