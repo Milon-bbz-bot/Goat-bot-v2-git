@@ -94,19 +94,20 @@ handlerCheckData.cantCreateThread=ɢʳᴏᴜᴘs ᴡɪᴛʜ ɪᴅ '%1' ᴄᴀɴ�
 handlerCheckData.cantCreateUser=ᴜsᴇʀs ᴡɪᴛʜ ɪᴅ '%1' ᴄᴀɴɴᴏᴛ ʙᴇ ᴡʀɪᴛᴛᴇɴ ᴛᴏ ᴛʜᴇ ᴅᴀᴛᴀʙᴀsᴇ!
 
 # bot/handler/handlerEvents.js
+handlerEvents.onlyVipUser=❌ Only VIP users can use the command {pn}.
 handlerEvents.userBanned=ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴜsɪɴɢ ᴛʜᴇ ʙᴏᴛ\n» ʀᴇᴀsᴏɴ: %1\n» ᴛɪᴍᴇ: %2\n» ᴜsᴇʀ ɪᴅ: %3
 handlerEvents.threadBanned=ᴛʜɪs ɢʳᴏᴜᴘ ʜᴀs ʙᴇᴇɴ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴜsɪɴɢ ᴛʜᴇ ʙᴏᴛ\n» ʀᴇᴀsᴏɴ: %1\n» ᴛɪᴍᴇ: %2\n» ᴛʜʀᴇᴀᴅ ɪᴅ: %3
 handlerEvents.onlyAdminBox=ᴛʜɪs ɢʳᴏᴜᴘ ɪs ᴄᴜʀʀᴇɴᴛʟʏ ᴇɴᴀʙʟᴇᴅ ᴏɴʟʏ ɢʳᴏᴜᴘ ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴏʀs ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ʙᴏᴛ
-handlerEvents.onlyAdminBot=❌ | ᴄᴜʀʀᴇɴᴛʟʏ ᴏɴʟʏ ʙᴏᴛ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜsᴇ ʙᴏᴛ
+handlerEvents.onlyAdminBot=❌ | ᴄᴜʀʀᴇɴᴛʟʏ ᴏɴʟʏ ʙᴏᴛ'ʙs ᴀᴅᴍɪɴ ᴄᴀɴ ᴜsᴇ ʙᴏᴛ
 handlerEvents.commandNotFound=ᴄᴏᴍᴍᴀɴᴅ "%1" ᴅᴏᴇs ɴᴏᴛ ᴇxɪsᴛ, ᴛʏᴘᴇ %2ʜᴇʟᴘ ᴛᴏ sᴇᴇ ᴀʟʟ ᴀᴠᴀɪʟᴀʙʟᴇ ᴄᴏᴍᴍᴀɴᴅs
-handlerEvents.commandNotFound2=📜 ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ ʏᴏᴜ ᴀʀᴇ ᴜsɪɴɢ ᴅᴏᴇs ɴᴏᴛ ᴇxɪsᴛ, ᴛʏᴘᴇ %1ʜᴇʟᴘ ᴛᴏ sᴇᴇ ᴀʟʟ ᴀᴠᴀɪʟᴀʙʟᴇ ᴄᴏᴍᴍᴀɴᴅs
-handlerEvents.commandSyntaxError=📜 ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ ʏᴏᴜ ᴀʀᴇ ᴜsɪɴɢ ɪs ᴡʀᴏɴɢ sʏɴᴛᴀx, ᴘʟᴇᴀsᴇ ᴛʏᴘᴇ %1ʜᴇʟᴘ %2 ᴛᴏ sᴇᴇ ᴛʜᴇ dᴇᴛᴀɪʟs ᴏғ ʜᴏᴡ ᴛᴏ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ
+handlerEvents.commandNotFound2=ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ ʏᴏᴜ ᴀʀᴇ ᴜsɪɴɢ ᴅᴏᴇs ɴᴏᴛ ᴇxɪsᴛ, ᴛʏᴘᴇ %1ʜᴇʟᴘ ᴛᴏ sᴇᴇ ᴀʟʟ ᴀᴠᴀɪʟᴀʙʟᴇ ᴄᴏᴍᴍᴀɴᴅs
+handlerEvents.commandSyntaxError=ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ ʏᴏᴜ ᴀʀᴇ ᴜsɪɴɢ ɪs ᴡʀᴏɴɢ sʏɴᴛᴀx, ᴘʟᴇᴀsᴇ ᴛʏᴘᴇ %1ʜᴇʟᴘ %2 ᴛᴏ sᴇᴇ ᴛʜᴇ dᴇᴛᴀɪʟs ᴏғ ʜᴏᴡ ᴛᴏ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ
 handlerEvents.onlyAdmin=❌ | ᴏɴʟʏ ɢʳᴏᴜᴘ ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴏʀs ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ "%1"
 handlerEvents.onlyAdminToUseOnReply=❌ | ᴏɴʟʏ ɢʳᴏᴜᴘ ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴏʀs ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ʀᴇᴘʟʏ ғᴜɴᴄᴛɪᴏɴ ᴏғ ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ "%1"
 handlerEvents.onlyAdminToUseOnReaction=❌ | ᴏɴʟʏ ɢʳᴏᴜᴘ ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴏʀs ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ ғᴜɴᴄᴛɪᴏɴ ᴏғ ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ "%1"
-handlerEvents.onlyAdminBot2=❌ | ᴏɴʟʏ ʙᴏᴛ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ "%1"
-handlerEvents.onlyAdminBot2ToUseOnReply=❌ | ᴏɴʟʏ ʙᴏᴛ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ʀᴇᴘʟʏ ғᴜɴᴄᴛɪᴏɴ ᴏғ ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ "%1"
-handlerEvents.onlyAdminBot2ToUseOnReaction=❌ | ᴏɴʟʏ ʙᴏᴛ ᴀᴅᴍɪɴ ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ ғᴜɴᴄᴛɪᴏɴ ᴏғ ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ "%1"
+handlerEvents.onlyAdminBot2=❌ | ᴏɴʟʏ ʙᴏᴛ'ʙs ᴀᴅᴍɪɴ ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ "%1"
+handlerEvents.onlyAdminBot2ToUseOnReply=❌ | ᴏɴʟʏ ʙᴏᴛ'ʙs ᴀᴅᴍɪɴ ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ʀᴇᴘʟʏ ғᴜɴᴄᴛɪᴏɴ ᴏғ ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ "%1"
+handlerEvents.onlyAdminBot2ToUseOnReaction=❌ | ᴏɴʟʏ ʙᴏᴛ'ʙs ᴀᴅᴍɪɴ ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ ғᴜɴᴄᴛɪᴏɴ ᴏғ ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ "%1"
 handlerEvents.waitingForCommand=⏱ ʏᴏᴜ ᴀʀᴇ ɪɴ ᴛʜᴇ ᴡᴀɪᴛɪɴɢ ᴛɪᴍᴇ ᴛᴏ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ, ᴘʟᴇᴀsᴇ ᴄᴏᴍᴇ ʙᴀᴄᴋ ᴀꜰᴛᴇʀ %1s
 handlerEvents.errorOccurred=❌ [ %1 ]\nᴀɴ ᴇʀʀᴏʀ ᴏᴄᴄᴜʀʀᴇᴅ ᴀᴛ ᴄᴏᴍᴍᴀɴᴅ "%2"\n\n%3
 handlerEvents.errorOccurred2=❌ [ %1 ]\nᴀɴ ᴇʀʀᴏʀ ᴏᴄᴄᴜʀʀᴇᴅ ᴀᴛ ᴄᴏᴍᴍᴀɴᴅ ᴏɴᴄʜᴀᴛ ɪɴ ᴄᴏᴍᴍᴀɴᴅ "%2"\n\n%3
