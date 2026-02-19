@@ -88,7 +88,7 @@ module.exports = {
     // Missing arguments
     if (args.length < 2) {
       return message.reply(
-        "⚠ Please provide a template ID and text.\n\nExample:\n.ephoto 1 Mahabub\n\nUse `.ephoto list` to see all templates."
+        "⚠ Please provide a template ID and text.\n\nExample:\n.ephoto 1 Milon\n\nUse `.ephoto list` to see all templates."
       );
     }
 
