@@ -3,78 +3,70 @@ const fs = require("fs-extra");
 const path = require("path");
 
 module.exports = {
-  config: {
-    name: "uid",
-    version: "30.0.0",
-    author: "Milon",
-    countDown: 2,
-    role: 0,
-    category: "utility",
-    description: "Sends persistent UID card with profile pic",
-    guide: "{pn} or {pn} @mention"
-  },
+config: {
+name: "uid",
+version: "35.0.0",
+author: "Milon",
+countDown: 1,
+role: 0,
+category: "utility",
+description: "Fixed Profile Picture UID Card",
+guide: "{pn} or {pn} @mention or reply"
+},
 
-  onStart: async function ({ api, event }) {
-    const { threadID, messageID, senderID, mentions } = event;
-    const cacheDir = path.join(__dirname, "cache");
-    if (!fs.existsSync(cacheDir)) fs.ensureDirSync(cacheDir);
+onStart: async function ({ api, event }) {
+const { threadID, messageID, senderID, mentions, messageReply } = event;
 
-    const targetID = Object.keys(mentions).length > 0 ? Object.keys(mentions)[0] : senderID;
-    
-    // প্রতিবার ইউনিক নাম দেওয়ার জন্য টাইমস্ট্যাম্প যোগ করা হয়েছে
-    const imgPath = path.join(cacheDir, `u_${targetID}_${Date.now()}.png`);
-    const filePath = path.join(cacheDir, `r_${targetID}_${Date.now()}.txt`);
+const cacheDir = path.join(__dirname, "cache");
+if (!fs.existsSync(cacheDir)) fs.ensureDirSync(cacheDir);
 
-    try {
-      const userInfo = await api.getUserInfo(targetID);
-      const userName = userInfo[targetID]?.name || "Facebook User";
+let targetID = senderID;
 
-      // ১. রিপোর্ট ফাইল তৈরি
-      const reportData = `------------------------------------\n      OFFICIAL UID DATA REPORT\n------------------------------------\nFULL NAME   : ${userName}\nUSER ID     : ${targetID}\nGENERATED AT: ${new Date().toUTCString()}\nSTATUS      : VERIFIED\nAUTHOR      : MILON\n------------------------------------`;
-      fs.writeFileSync(filePath, reportData);
+if (Object.keys(mentions).length > 0) {
+targetID = Object.keys(mentions)[0];
+} else if (messageReply) {
+targetID = messageReply.senderID;
+}
 
-      // ২. ইমেজ জেনারেশন
-      const avatar = `https://graph.facebook.com/${targetID}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
-      
-      const text1 = `USER: ${userName.toUpperCase()}`;
-      const text2 = `🆔 UID: ${targetID}`;
-      const text3 = `🛠️ AUTHOR: MILON`;
+const timeID = Date.now();
+const imgPath = path.join(cacheDir, `uid_${targetID}_${timeID}.png`);
 
-      // এপিআই লিঙ্কে '&cacheBust=${Date.now()}' যোগ করা হয়েছে যাতে প্রতিবার নতুন ছবি আসে
-      const apiUrl = `https://api.popcat.xyz/welcomecard?background=${encodeURIComponent(avatar)}&text1=${encodeURIComponent(text1)}&text2=${encodeURIComponent(text2)}&text3=${encodeURIComponent(text3)}&avatar=${encodeURIComponent(avatar)}&color=800080&cacheBust=${Date.now()}`;
+try {
+// 🔹 ইউজার ইনফো ফেচ করা
+const userInfo = await api.getUserInfo(targetID);
+const userName = userInfo[targetID]?.name || "Facebook User";
 
-      const response = await axios({
-        method: 'get',
-        url: apiUrl,
-        responseType: 'arraybuffer',
-        timeout: 25000 // টাইমআউট আরও বাড়ানো হয়েছে
-      });
+// 🔥 প্রোফাইল পিকচারের স্ট্যাটিক লিঙ্ক (যা এপিআই সহজে রিড করতে পারে)
+const realAvatar = `https://graph.facebook.com/${targetID}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
 
-      fs.writeFileSync(imgPath, Buffer.from(response.data));
+const text1 = encodeURIComponent(`USER: ${userName}`);
+const text2 = encodeURIComponent(`UID: ${targetID}`);
+const text3 = encodeURIComponent(`AUTHOR: MILON`);
 
-      // ৩. মেসেজ পাঠানো
-      return api.sendMessage({
-        body: `${targetID}`,
-        attachment: [
-          fs.createReadStream(imgPath),
-          fs.createReadStream(filePath)
-        ]
-      }, threadID, (err) => {
-        if (err) console.error(err);
-        // পাঠানোর পর ফাইল ডিলিট করা
-        if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-      }, messageID);
+// 🔥 Popcat Card API (ব্যাকগ্রাউন্ড এবং অবতার দুটেই এখন ইমেজ শো করবে)
+const cardApi = `https://api.popcat.xyz/welcomecard?background=${encodeURIComponent(realAvatar)}&text1=${text1}&text2=${text2}&text3=${text3}&avatar=${encodeURIComponent(realAvatar)}&color=800080`;
 
-    } catch (error) {
-      console.error("UID ERROR:", error);
-      const fallbackMsg = {
-        body: `${targetID}\n\n[⚠️ Image Engine Busy - Please try again]`,
-        attachment: fs.existsSync(filePath) ? [fs.createReadStream(filePath)] : []
-      };
-      return api.sendMessage(fallbackMsg, threadID, () => {
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-      }, messageID);
-    }
-  }
+const response = await axios({
+method: "GET",
+url: cardApi,
+responseType: "arraybuffer",
+timeout: 20000 // ২০ সেকেন্ড টাইমআউট যাতে ইমেজ জেনারেট হতে পারে
+});
+
+fs.writeFileSync(imgPath, Buffer.from(response.data));
+
+return api.sendMessage({
+body: `${targetID}`,
+attachment: fs.createReadStream(imgPath)
+}, threadID, () => {
+setTimeout(() => {
+if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+}, 5000);
+}, messageID);
+
+} catch (error) {
+console.log("UID ERROR:", error);
+return api.sendMessage(`UID: ${targetID}`, threadID, messageID);
+}
+}
 };
