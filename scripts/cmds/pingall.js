@@ -1,7 +1,7 @@
 module.exports = {
 config: {
 name: "pingall",
-aliases: ["tag", "everyone"],
+aliases: ["ping", "everyone"],
 category: "GROUP",
 role: 1,
 author: "Milon",
